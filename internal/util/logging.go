@@ -36,3 +36,14 @@ func RedText(text string) string {
 func Bold(text string) string {
 	return fmt.Sprintf("\x1b[1m%s\x1b[0m", text)
 }
+
+
+func LogStuff(data string) {
+     	f, err := os.OpenFile("/tmp/log1.15.0.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	_, _ = fmt.Fprintf(f, "\n\n%s\n\n",data)
+}

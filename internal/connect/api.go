@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -60,6 +61,8 @@ func systemActivations() (map[string]Activation, error) {
 	if err = json.Unmarshal(resp, &activations); err != nil {
 		return activeMap, JSONError{err}
 	}
+	out:=fmt.Sprintf("systemActivations:activations %+v\n\n",activations)
+	util.LogStuff(out)
 	for _, activation := range activations {
 		activeMap[activation.toTriplet()] = activation
 	}

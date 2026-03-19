@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"net"
 	"net/url"
 	"path/filepath"
@@ -31,6 +32,7 @@ const (
 	llError   = 4
 	llFatal   = 5
 )
+
 
 // simple Writer interface implementation which forwards messages
 // to log callback
@@ -63,6 +65,7 @@ func free_string(str *C.char) {
 
 //export announce_system
 func announce_system(clientParams, distroTarget *C.char) *C.char {
+	util.LogStuff("!!!!!!! in announce_system\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	login, password, err := connect.AnnounceSystem(C.GoString(distroTarget), "", false)
@@ -80,6 +83,7 @@ func announce_system(clientParams, distroTarget *C.char) *C.char {
 
 //export update_system
 func update_system(clientParams, distroTarget *C.char) *C.char {
+        util.LogStuff("!!!!!!! in update_system\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	if err := connect.UpdateSystem(C.GoString(distroTarget), "", false, false); err != nil {
@@ -91,6 +95,7 @@ func update_system(clientParams, distroTarget *C.char) *C.char {
 
 //export deactivate_system
 func deactivate_system(clientParams *C.char) *C.char {
+	util.LogStuff("!!!!!!! in deactivate_system\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	err := connect.DeregisterSystem()
@@ -103,6 +108,7 @@ func deactivate_system(clientParams *C.char) *C.char {
 
 //export credentials
 func credentials(path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in credentials\n\n")
 	creds, err := cred.ReadCredentials(C.GoString(path))
 	if err != nil {
 		return C.CString(errorToJSON(err))
@@ -113,6 +119,7 @@ func credentials(path *C.char) *C.char {
 
 //export create_credentials_file
 func create_credentials_file(login, password, token, path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in creat_credentials\n\n")
 	credPath := C.GoString(path)
 
 	if !filepath.IsAbs(credPath) {
@@ -129,6 +136,7 @@ func create_credentials_file(login, password, token, path *C.char) *C.char {
 
 //export curlrc_credentials
 func curlrc_credentials() *C.char {
+	util.LogStuff("!!!!!!! in curlrc_credentials\n\n")
 	// NOTE: errors are ignored to match original
 	creds, _ := cred.ReadCurlrcCredentials()
 	jsn, _ := json.Marshal(&creds)
@@ -137,6 +145,7 @@ func curlrc_credentials() *C.char {
 
 //export show_product
 func show_product(clientParams, product *C.char) *C.char {
+        util.LogStuff("!!!!!!! in show_product\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	var productQuery connect.Product
@@ -157,6 +166,7 @@ func show_product(clientParams, product *C.char) *C.char {
 
 //export activate_product
 func activate_product(clientParams, product, email *C.char) *C.char {
+        util.LogStuff("!!!!!!! in activate_product\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	var p connect.Product
@@ -172,14 +182,17 @@ func activate_product(clientParams, product, email *C.char) *C.char {
 	if err != nil {
 		return C.CString(errorToJSON(err))
 	}
+        util.LogStuff(string(jsn))
 	return C.CString(string(jsn))
 }
 
 //export activated_products
 func activated_products(clientParams *C.char) *C.char {
+        util.LogStuff("!!!!!!! in activated_products\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	products, err := connect.ActivatedProducts()
+	
 	if err != nil {
 		return C.CString(errorToJSON(err))
 	}
@@ -187,11 +200,18 @@ func activated_products(clientParams *C.char) *C.char {
 	if err != nil {
 		return C.CString(errorToJSON(err))
 	}
+
+	out:=fmt.Sprintf("activated_products:jsn %s\n\n",string(jsn))
+        util.LogStuff(out)
+
+	out=fmt.Sprintf("activated_products:products %+v\n\n",products)
+	util.LogStuff(out)
 	return C.CString(string(jsn))
 }
 
 //export deactivate_product
 func deactivate_product(clientParams, product *C.char) *C.char {
+        util.LogStuff("!!!!!!! in deactivate_product\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	var p connect.Product
@@ -212,6 +232,7 @@ func deactivate_product(clientParams, product *C.char) *C.char {
 
 //export get_config
 func get_config(path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in get_config\n\n")
 	c := connect.NewConfig()
 	c.Path = C.GoString(path)
 	c.Load()
@@ -224,6 +245,7 @@ func get_config(path *C.char) *C.char {
 
 //export write_config
 func write_config(clientParams *C.char) *C.char {
+	util.LogStuff("!!!!!!! in write_config\n\n")
 	loadConfig(C.GoString(clientParams))
 	err := connect.CFG.Save()
 	if err != nil {
@@ -233,6 +255,7 @@ func write_config(clientParams *C.char) *C.char {
 }
 
 func loadConfig(clientParams string) {
+	util.LogStuff("!!!!!!! in loadConfig\n\n")
 	// unmarshal extra config fields only for local use
 	var extConfig struct {
 		Debug string `json:"debug"`
@@ -340,6 +363,7 @@ func errorToJSON(err error) string {
 
 //export getstatus
 func getstatus(format *C.char) *C.char {
+        util.LogStuff("!!!!!!! in get_status\n\n")
 	connect.CFG.Load()
 	gFormat := C.GoString(format)
 	output, err := connect.GetProductStatuses(gFormat)
@@ -473,6 +497,7 @@ func synchronize(clientParams, products *C.char) *C.char {
 
 //export system_activations
 func system_activations(clientParams *C.char) *C.char {
+        util.LogStuff("!!!!!!! in system_activations\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	// converting from map to list as expected by Ruby clients
@@ -493,6 +518,7 @@ func system_activations(clientParams *C.char) *C.char {
 
 //export search_package
 func search_package(clientParams, product, query *C.char) *C.char {
+	util.LogStuff("!!!!!!! in search_package\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	var p connect.Product

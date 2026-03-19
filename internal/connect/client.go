@@ -499,12 +499,18 @@ func ShowProduct(productQuery Product) (Product, error) {
 func ActivatedProducts() ([]Product, error) {
 	var products []Product
 	activations, err := systemActivations()
+	out:=fmt.Sprintf("ActivatedProducts:activations %+v\n\n",activations)
+	util.LogStuff(out)
 	if err != nil {
 		return products, err
 	}
 	for _, a := range activations {
+		out=fmt.Sprintf("ActivatedProducts:a.Service.Products %+v\n\n",a.Service.Product)
+		util.LogStuff(out)
 		products = append(products, a.Service.Product)
 	}
+	out=fmt.Sprintf("ActivatedProducts:products %+v\n\n",products)
+	util.LogStuff(out)
 	return products, nil
 }
 
