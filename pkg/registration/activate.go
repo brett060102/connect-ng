@@ -2,8 +2,10 @@ package registration
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/SUSE/connect-ng/pkg/connection"
+	"github.com/SUSE/connect-ng/internal/util"
 )
 
 // Metadata holds all the data that is returned by activate/deactivate API calls
@@ -78,13 +80,19 @@ func doActivateCall(conn connection.Connection, verb, identifier, version, arch,
 		return nil, &Product{}, credErr
 	}
 
+	out:=fmt.Sprintf("doAcitvateCall:payload: %+v\n\n", payload)
+	util.LogStuff(out)
 	request, buildErr := conn.BuildRequest(verb, "/connect/systems/products", payload)
+	out=fmt.Sprintf("doAcitvateCall:request: %+v\n\n", request)
+	util.LogStuff(out)
 	if buildErr != nil {
 		return nil, &Product{}, buildErr
 	}
 
 	connection.AddSystemAuth(request, login, password)
 
+	out=fmt.Sprintf("doAcitvateCall:requestwithauth: %+v\n\n", request)
+	util.LogStuff(out)
 	response, doErr := conn.Do(request)
 	if doErr != nil {
 		return nil, &Product{}, doErr

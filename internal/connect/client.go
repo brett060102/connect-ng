@@ -116,12 +116,15 @@ func Register(api WrappedAPI, opts *Options) error {
 func registerProduct(conn connection.Connection, opts *Options, product registration.Product, installReleasePkg bool) (registration.Service, error) {
 	opts.Print(fmt.Sprintf("\nActivating %s %s %s ...\n", product.Identifier, product.Version, product.Arch))
 
+	util.LogStuff("registerProduct.0\n\n")
 	service, err := ActivateProduct(conn, opts.Token, product)
 	if err != nil {
+	       	util.LogStuff("registerProduct.0.1\n\n")
 		return registration.Service{}, err
 	}
 
 	if !opts.SkipServiceInstall {
+	       	util.LogStuff("registerProduct.1\n\n")
 		opts.Print("-> Adding service to system ...")
 
 		if err := localAddService(service.URL, service.Name, !opts.NoZypperRefresh, opts.Insecure); err != nil {
@@ -129,13 +132,17 @@ func registerProduct(conn connection.Connection, opts *Options, product registra
 		}
 	}
 
+	util.LogStuff("registerProduct.2\n\n")
 	if installReleasePkg && !opts.SkipServiceInstall {
+	       	util.LogStuff("registerProduct.3\n\n")
 		opts.Print("-> Installing release package ...")
 
 		if err := localInstallReleasePackage(product.Identifier, opts.AutoImportRepoKeys); err != nil {
+	       	       	util.LogStuff("registerProduct.3.1\n\n")
 			return registration.Service{}, err
 		}
 	}
+	util.LogStuff("registerProduct.4\n\n")
 	return service, nil
 }
 
@@ -381,20 +388,30 @@ func ActivatedProducts(conn connection.Connection) ([]*registration.Product, err
 	var products []*registration.Product
 
 	activations, err := registration.FetchActivations(conn)
+	out:=fmt.Sprintf("ActivatedProducts:activations %+v\n\n",activations)
+	util.LogStuff(out)
 	if err != nil {
 		return products, err
 	}
 	for _, a := range activations {
+		out:=fmt.Sprintf("ActivatedProducts:a.Products %+v\n\n",a.Product)
+		util.LogStuff(out)
 		products = append(products, a.Product)
 	}
+	out=fmt.Sprintf("ActivatedProducts:products %+v\n\n",products)
+	util.LogStuff(out)
 	return products, nil
 }
 
 // ActivateProduct activates given product in SMT/SCC
 // returns Service to be added to zypper
 func ActivateProduct(conn connection.Connection, regcode string, product registration.Product) (registration.Service, error) {
+	out:=fmt.Sprintf("ActivateProduct.0, %s ---- %+v\n\n",regcode, product)
+	util.LogStuff(out)
 	meta, pr, err := registration.Activate(conn, product.Identifier, product.Version, product.Arch, regcode)
+	util.LogStuff("ActivateProduct.1\n\n")
 	if err != nil {
+		util.LogStuff("ActivateProduct.2\n\n")
 		return registration.Service{}, err
 	}
 

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/SUSE/connect-ng/internal/util"
 )
 
 // ApiError contains all the information for any given API error response. Don't
@@ -14,10 +16,15 @@ type ApiError struct {
 	LocalizedMessage string `json:"localized_error"`
 }
 
-func (ae *ApiError) Error() string {
+func (ae *ApiError) Error() string { 
+        out:=fmt.Sprintf("api_error.go\n\n")
+        util.LogStuff(out)
+
 	if ae.LocalizedMessage != "" {
 		return fmt.Sprintf("Error: Registration server returned '%v' (%d)", ae.LocalizedMessage, ae.Code)
 	}
+        out=fmt.Sprintf("api_error.go:message %+v\n\n",ae)
+        util.LogStuff(out)
 	return fmt.Sprintf("Error: Registration server returned '%v' (%d)", ae.Message, ae.Code)
 }
 

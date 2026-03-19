@@ -15,6 +15,7 @@ type Product struct {
 	// internally we will be consistent with SCC's API and name this attribute
 	// "identifier", regardless of the naming in zypper.
 	Identifier string `xml:"name,attr" json:"identifier"`
+	ID         int `json:"id"`
 	Name       string `json:"name"`
 
 	Version string `xml:"version,attr" json:"version"`

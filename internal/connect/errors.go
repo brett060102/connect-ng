@@ -3,6 +3,7 @@ package connect
 import (
 	"errors"
 	"fmt"
+	"github.com/SUSE/connect-ng/internal/util"
 )
 
 // export errors that package main needs
@@ -20,6 +21,9 @@ type APIError struct {
 }
 
 func (ae APIError) Error() string {
+        out:=fmt.Sprintf("connect:errors..go\n\n")
+        util.LogStuff(out)
+
 	return fmt.Sprintf("Error: Registration server returned '%s' (%d)", ae.Message, ae.Code)
 }
 

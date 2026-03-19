@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"net"
 	"net/url"
 	"path/filepath"
@@ -33,6 +34,7 @@ const (
 	llError   = 4
 	llFatal   = 5
 )
+
 
 // simple Writer interface implementation which forwards messages
 // to log callback
@@ -65,6 +67,7 @@ func free_string(str *C.char) {
 
 //export announce_system
 func announce_system(clientParams, distroTarget *C.char) *C.char {
+	util.LogStuff("!!!!!!! in announce_system\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 	api := connect.NewWrappedAPI(opts)
 
@@ -90,6 +93,7 @@ func announce_system(clientParams, distroTarget *C.char) *C.char {
 
 //export update_system
 func update_system(clientParams, distroTarget *C.char) *C.char {
+        util.LogStuff("!!!!!!! in update_system\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 
 	api := connect.NewWrappedAPI(opts)
@@ -101,6 +105,7 @@ func update_system(clientParams, distroTarget *C.char) *C.char {
 
 //export deactivate_system
 func deactivate_system(clientParams *C.char) *C.char {
+	util.LogStuff("!!!!!!! in deactivate_system\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 	api := connect.NewWrappedAPI(opts)
 
@@ -114,6 +119,7 @@ func deactivate_system(clientParams *C.char) *C.char {
 
 //export credentials
 func credentials(path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in credentials\n\n")
 	creds, err := cred.ReadCredentials(C.GoString(path))
 	if err != nil {
 		return C.CString(errorToJSON(err))
@@ -124,6 +130,7 @@ func credentials(path *C.char) *C.char {
 
 //export create_credentials_file
 func create_credentials_file(login, password, token, path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in creat_credentials\n\n")
 	credPath := C.GoString(path)
 
 	if !filepath.IsAbs(credPath) {
@@ -140,6 +147,7 @@ func create_credentials_file(login, password, token, path *C.char) *C.char {
 
 //export curlrc_credentials
 func curlrc_credentials() *C.char {
+	util.LogStuff("!!!!!!! in curlrc_credentials\n\n")
 	// NOTE: errors are ignored to match original
 	creds, _ := cred.ReadCurlrcCredentials()
 	jsn, _ := json.Marshal(&creds)
@@ -148,6 +156,7 @@ func curlrc_credentials() *C.char {
 
 //export show_product
 func show_product(clientParams, product *C.char) *C.char {
+        util.LogStuff("!!!!!!! in show_product\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 
 	var productQuery registration.Product
@@ -170,43 +179,77 @@ func show_product(clientParams, product *C.char) *C.char {
 
 //export activate_product
 func activate_product(clientParams, product, email *C.char) *C.char {
-	opts := loadConfig(C.GoString(clientParams))
+        util.LogStuff("!!!!!!! in activate_product\n\n")
+	opts:= loadConfig(C.GoString(clientParams))
+	out:=fmt.Sprintf("activate_product:clientParams %+v\n\n",clientParams)
+        util.LogStuff(out)
+	out=fmt.Sprintf("activate_product:product %+v\n\n",product)
+        util.LogStuff(out)
+	out=fmt.Sprintf("activate_product:opts %+v\n\n",opts)
+        util.LogStuff(out)
 	api := connect.NewWrappedAPI(opts)
+        util.LogStuff("!!!!!!! in activate_product.1\n\n")
 
 	var p registration.Product
 	err := json.Unmarshal([]byte(C.GoString(product)), &p)
 	if err != nil {
+	        out=fmt.Sprintf("activate_products:error %+v\n\n",err)
+        	util.LogStuff(out)
 		return C.CString(errorToJSON(connect.JSONError{Err: err}))
 	}
-	service, err := connect.ActivateProduct(api.GetConnection(), opts.Token, p)
+        conn:=api.GetConnection()
+	service, err := connect.ActivateProduct(conn, opts.Token, p)
+	out=fmt.Sprintf("!!!!!!! in activate_product.3.0 p::%+v\n\n",p)
+	util.LogStuff(out)
 	if err != nil {
+	        out=fmt.Sprintf("activate_products3.1:error %+v\n\n",err)
+        	util.LogStuff(out)
+	        out=fmt.Sprintf("activate_products3.2:error %+s\n\n",errorToJSON(err))
+        	util.LogStuff(out)
 		return C.CString(errorToJSON(err))
 	}
 	jsn, err := json.Marshal(service)
 	if err != nil {
+	        util.LogStuff("!!!!!!! in activate_product.4\n\n")
 		return C.CString(errorToJSON(err))
 	}
+        util.LogStuff(string(jsn))
 	return C.CString(string(jsn))
 }
 
 //export activated_products
 func activated_products(clientParams *C.char) *C.char {
+        util.LogStuff("!!!!!!! in activated_products\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 	api := connect.NewWrappedAPI(opts)
 
 	products, err := connect.ActivatedProducts(api.GetConnection())
 	if err != nil {
+	        out:=fmt.Sprintf("!!!!!!! in activated_products.1 %s\n\n", errorToJSON(err))
+	        util.LogStuff(out)
 		return C.CString(errorToJSON(err))
 	}
 	jsn, err := json.Marshal(products)
 	if err != nil {
+	        out:=fmt.Sprintf("!!!!!!! in activated_products.2 %s\n\n", errorToJSON(err))
+	        util.LogStuff(out)
 		return C.CString(errorToJSON(err))
 	}
+	out:=fmt.Sprintf("activated_products:jsn %s\n\n",string(jsn))
+        util.LogStuff(out)
+
+	out=fmt.Sprintf("activated_products:products %+v\n\n",products)
+        util.LogStuff(out)
+
+	out=fmt.Sprintf("exit activated_products:products %s\n\n",string(jsn))
+        util.LogStuff(out)
+
 	return C.CString(string(jsn))
 }
 
 //export deactivate_product
 func deactivate_product(clientParams, product *C.char) *C.char {
+        util.LogStuff("!!!!!!! in deactivate_product\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 	api := connect.NewWrappedAPI(opts)
 
@@ -236,6 +279,7 @@ func deactivate_product(clientParams, product *C.char) *C.char {
 
 //export get_config
 func get_config(path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in get_config\n\n")
 	opts, _ := connect.ReadFromConfiguration(C.GoString(path))
 	jsn, err := json.Marshal(opts)
 	if err != nil {
@@ -246,6 +290,7 @@ func get_config(path *C.char) *C.char {
 
 //export write_config
 func write_config(clientParams *C.char) *C.char {
+	util.LogStuff("!!!!!!! in write_config\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 
 	err := opts.SaveAsConfiguration()
@@ -256,6 +301,7 @@ func write_config(clientParams *C.char) *C.char {
 }
 
 func loadConfig(clientParams string) *connect.Options {
+	util.LogStuff("!!!!!!! in loadConfig\n\n")
 	// unmarshal extra config fields only for local use
 	var extConfig struct {
 		Debug string `json:"debug"`
@@ -368,6 +414,7 @@ func errorToJSON(err error) string {
 
 //export getstatus
 func getstatus(format *C.char) *C.char {
+        util.LogStuff("!!!!!!! in get_status\n\n")
 	opts, _ := connect.ReadFromConfiguration(connect.DefaultConfigPath)
 
 	gFormat := C.GoString(format)
@@ -517,6 +564,7 @@ func synchronize(clientParams, products *C.char) *C.char {
 
 //export system_activations
 func system_activations(clientParams *C.char) *C.char {
+        util.LogStuff("!!!!!!! in system_activations\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 	api := connect.NewWrappedAPI(opts)
 
@@ -533,6 +581,7 @@ func system_activations(clientParams *C.char) *C.char {
 
 //export search_package
 func search_package(clientParams, product, query *C.char) *C.char {
+	util.LogStuff("!!!!!!! in search_package\n\n")
 	opts := loadConfig(C.GoString(clientParams))
 	api := connect.NewWrappedAPI(opts)
 

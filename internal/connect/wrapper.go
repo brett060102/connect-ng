@@ -194,6 +194,7 @@ func (w Wrapper) IsRegistered() bool {
 }
 
 func (w Wrapper) GetConnection() connection.Connection {
+     	util.LogStuff("wrapped.GetConnection\n\n")
 	return w.Connection
 }
 
