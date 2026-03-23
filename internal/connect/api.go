@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -122,11 +123,17 @@ func activateProduct(product Product, email string) (Service, error) {
 	if err != nil {
 		return service, err
 	}
+        
+	out:=fmt.Sprintf("activatedProduct:payload %+v\n\n",payload)
+	util.LogStuff(out)
 	resp, err := callHTTP("POST", "/connect/systems/products", body, nil, authSystem)
+	
 	if err != nil {
 		return service, err
 	}
 	err = json.Unmarshal(resp, &service)
+	out=fmt.Sprintf("activatedProduct:service %+v\n\n",service)
+	util.LogStuff(out)
 	if err != nil {
 		return service, JSONError{err}
 	}

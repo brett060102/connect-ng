@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"net"
 	"net/url"
 	"path/filepath"
@@ -63,6 +64,7 @@ func free_string(str *C.char) {
 
 //export announce_system
 func announce_system(clientParams, distroTarget *C.char) *C.char {
+	util.LogStuff("!!!!!!! in announce_system\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	login, password, err := connect.AnnounceSystem(C.GoString(distroTarget), "", false)
@@ -80,6 +82,7 @@ func announce_system(clientParams, distroTarget *C.char) *C.char {
 
 //export update_system
 func update_system(clientParams, distroTarget *C.char) *C.char {
+        util.LogStuff("!!!!!!! in update_system\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	if err := connect.UpdateSystem(C.GoString(distroTarget), "", false, false); err != nil {
@@ -91,6 +94,7 @@ func update_system(clientParams, distroTarget *C.char) *C.char {
 
 //export deactivate_system
 func deactivate_system(clientParams *C.char) *C.char {
+	util.LogStuff("!!!!!!! in deactivate_system\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	err := connect.DeregisterSystem()
@@ -103,6 +107,7 @@ func deactivate_system(clientParams *C.char) *C.char {
 
 //export credentials
 func credentials(path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in credentials\n\n")
 	creds, err := cred.ReadCredentials(C.GoString(path))
 	if err != nil {
 		return C.CString(errorToJSON(err))
@@ -113,6 +118,7 @@ func credentials(path *C.char) *C.char {
 
 //export create_credentials_file
 func create_credentials_file(login, password, token, path *C.char) *C.char {
+	util.LogStuff("!!!!!!! in creat_credentials\n\n")
 	credPath := C.GoString(path)
 
 	if !filepath.IsAbs(credPath) {
@@ -129,6 +135,7 @@ func create_credentials_file(login, password, token, path *C.char) *C.char {
 
 //export curlrc_credentials
 func curlrc_credentials() *C.char {
+	util.LogStuff("!!!!!!! in curlrc_credentials\n\n")
 	// NOTE: errors are ignored to match original
 	creds, _ := cred.ReadCurlrcCredentials()
 	jsn, _ := json.Marshal(&creds)
@@ -137,6 +144,7 @@ func curlrc_credentials() *C.char {
 
 //export show_product
 func show_product(clientParams, product *C.char) *C.char {
+        util.LogStuff("!!!!!!! in show_product\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	var productQuery connect.Product
@@ -157,21 +165,36 @@ func show_product(clientParams, product *C.char) *C.char {
 
 //export activate_product
 func activate_product(clientParams, product, email *C.char) *C.char {
+        util.LogStuff("!!!!!!! in activate_product\n\n")
 	loadConfig(C.GoString(clientParams))
 
 	var p connect.Product
 	err := json.Unmarshal([]byte(C.GoString(product)), &p)
+	out:=fmt.Sprintf("activate_product:clientParams %q\n\n",C.GoString(clientParams))
+        util.LogStuff(out)
+	out=fmt.Sprintf("activate_product:product %q\n\n",C.GoString(product))
+        util.LogStuff(out)
 	if err != nil {
 		return C.CString(errorToJSON(connect.JSONError{Err: err}))
 	}
+        util.LogStuff("!!!!!!! activate_product.0\n\n")
 	service, err := connect.ActivateProduct(p, C.GoString(email))
+	out=fmt.Sprintf("activate_product:service %+v\n\n",service)
+        util.LogStuff(out)
+        util.LogStuff("!!!!!!! activate_product.1\n\n")
 	if err != nil {
+	        out:=fmt.Sprintf("!!!!!!! activate_product.1.1 err %+v\n%s\n",err)
+                util.LogStuff(out)
+	        out=fmt.Sprintf("!!!!!!! activate_product.1.2 err %s\n%s\n",errorToJSON(err))
+                util.LogStuff(out)
 		return C.CString(errorToJSON(err))
 	}
+        util.LogStuff("!!!!!!! activate_product.2\n\n")
 	jsn, err := json.Marshal(service)
 	if err != nil {
 		return C.CString(errorToJSON(err))
 	}
+        util.LogStuff("!!!!!!! exit activate_product\n\n")
 	return C.CString(string(jsn))
 }
 
